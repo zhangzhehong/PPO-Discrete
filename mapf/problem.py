@@ -22,12 +22,9 @@ from typing import Dict, List
 
 import yaml
 
-from sadg_controller.mapf.plan import Plan
-from sadg_controller.mapf.roadmap import Roadmap
-from sadg_controller.mapf.roadmap_location import RoadmapLocation
-
-# from rclpy.node import Node
-
+from mapf.plan import Plan
+from mapf.roadmap import Roadmap
+from mapf.roadmap_location import RoadmapLocation
 
 yaml.Dumper.ignore_aliases = lambda *args: True
 
@@ -44,7 +41,7 @@ class MAPFProblem:
         self.starts = starts
         self.goals = goals
         self.logger = logger
-        self.tmp_dir = mkdtemp(prefix="sadg_controller")
+        self.tmp_dir = mkdtemp(prefix="log")
 
     def solve(self, suboptimality_factor: float = 1.5) -> Plan:
         """Solve the MAPF problem using ECBS algorithm."""

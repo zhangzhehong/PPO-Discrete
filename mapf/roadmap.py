@@ -22,7 +22,7 @@ from typing import Dict, List
 
 import yaml
 
-from sadg_controller.mapf.roadmap_location import RoadmapLocation
+from mapf.roadmap_location import RoadmapLocation
 
 logger = getLogger(__name__)
 random.seed(1)

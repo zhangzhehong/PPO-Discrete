@@ -17,12 +17,12 @@
 
 from logging import DEBUG, Logger
 
-from sadg_controller.mapf.problem import MAPFProblem
-from sadg_controller.mapf.roadmap import Roadmap
-from sadg_controller.sadg.compiler import compile_sadg
-from sadg_controller.sadg.sadg import SADG
-from sadg_controller.sadg.status import Status
-from sadg_controller.sadg.visualizer import Visualizer
+from mapf.problem import MAPFProblem
+from mapf.roadmap import Roadmap
+from sadg.compiler import compile_sadg
+from sadg.sadg import SADG
+from sadg.status import Status
+from sadg.visualizer import Visualizer
 
 
 def main() -> None:
@@ -32,9 +32,7 @@ def main() -> None:
 
     logger = Logger(__name__, level=DEBUG)
 
-    roadmap_path = (
-        "home/alex/sadg_ws/src/sadg-controller/sadg_controller/data/roadmaps/test"
-    )
+    roadmap_path = ("data/roadmaps/test")
     roadmap = Roadmap(roadmap_path)
 
     starts = roadmap.random_locations(agent_count)

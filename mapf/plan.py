@@ -18,10 +18,9 @@
 from logging import getLogger
 from typing import Dict
 
-from sadg_controller.mapf.plan_tuple import PlanTuple
+from mapf.plan_tuple import PlanTuple
 
 logger = getLogger(__name__)
-
 
 class Plan:
     def __init__(self, solution: Dict, dimensions: Dict) -> None:
