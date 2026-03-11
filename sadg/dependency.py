@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import sadg_controller.sadg.vertex as vertex
+import sadg.vertex as vertex
 
 
 class Dependency:

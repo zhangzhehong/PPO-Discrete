@@ -17,12 +17,12 @@
 
 from logging import getLogger
 
-from sadg_controller.core.geometry import intersects
-from sadg_controller.mapf.plan import Plan
-from sadg_controller.sadg.dependency import Dependency
-from sadg_controller.sadg.status import Status
-from sadg_controller.sadg.vertex import Vertex, loc
-from sadg_controller.se_adg.se_adg import SE_ADG
+from core.geometry import intersects
+from mapf.plan import Plan
+from sadg.dependency import Dependency
+from sadg.status import Status
+from sadg.vertex import Vertex, loc
+from se_adg.se_adg import SE_ADG
 
 logger = getLogger(__name__)
 

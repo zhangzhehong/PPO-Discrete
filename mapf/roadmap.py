@@ -29,20 +29,22 @@ random.seed(1)
 
 
 class Roadmap:
-    def __init__(self, roadmap_path: str) -> None:
+    def __init__(self, roadmap_path: str, map_type: str) -> None:
 
-        roadmap_file = f"/{roadmap_path}/roadmap.csv"
-        dimensions_file = f"/{roadmap_path}/dimensions.yaml"
-
+        roadmap_file = f"{roadmap_path}/roadmap.csv"
+        dimensions_file = f"{roadmap_path}/dimensions.yaml"
+        self.roadmap_path = roadmap_path
+        self.map_type = map_type
         self.array = self._read_roadmap_csv(roadmap_file)
         self.dimensions = self._read_dimensions(dimensions_file)
         self.map_data = self._get_map_data()
 
-    def random_locations(self, agv_count: int) -> List[RoadmapLocation]:
+    def random_locations(self, agv_count: int, trial: int) -> List[RoadmapLocation]:
         """Return random locations on roadmap.
 
         Samples `agv_count` random locations from the roadmap."""
 
+        random.seed(trial)
         valid_start_locations = self._get_valid_agv_starts()
 
         if len(valid_start_locations) < agv_count:
@@ -50,7 +52,19 @@ class Roadmap:
                 "AGV count is higher than number of valid start/goal locations"
             )
 
-        return random.sample(valid_start_locations, agv_count)
+        while True:
+            starts = random.sample(valid_start_locations, agv_count)
+            goals = random.sample(valid_start_locations, agv_count)
+            
+            # Check if any agent has same start and goal
+            conflict = False
+            for s, g in zip(starts, goals):
+                if s.row == g.row and s.col == g.col:
+                    conflict = True
+                    break
+            
+            if not conflict:
+                return starts, goals
 
     def get_map_data(self) -> Dict[str, List[List[int]]]:
         return self.map_data

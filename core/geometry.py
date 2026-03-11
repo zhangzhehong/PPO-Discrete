@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from sadg_controller.sadg.location import Location
+from sadg.location import Location
 
 
 def intersects(loc_1: Location, loc_2: Location) -> bool:

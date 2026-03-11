@@ -62,5 +62,5 @@ def _parse_solution(solution: Dict, dimensions: Dict) -> None:
             plan.append(PlanTuple(x, y, t))
 
         plans[id] = plan
-
+        # print(f"Plan for agent {id}: {len(plan)}, the first {plan[0] if plan else 'None'}")
     return plans

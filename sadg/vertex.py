@@ -17,9 +17,9 @@
 
 from typing import Any, List, Union
 
-from sadg_controller.mapf.plan_tuple import PlanTuple
-from sadg_controller.sadg.location import Location, calculate_distance
-from sadg_controller.sadg.status import Status
+from mapf.plan_tuple import PlanTuple
+from sadg.location import Location, calculate_distance
+from sadg.status import Status
 
 NOMINAL_SPEED_M_PER_S = 2  # meters per second
 
@@ -134,12 +134,16 @@ class Vertex:
         return blocking_vertices
 
     def _update(self) -> None:
-        plan_tuples_distance = calculate_plan_tuple_distance(self.plan_tuples)
+        self.plan_tuples_distance = calculate_plan_tuple_distance(self.plan_tuples)
 
-        self.expected_completion_time = plan_tuples_distance / NOMINAL_SPEED_M_PER_S
+        self.expected_completion_time = self.plan_tuples_distance / NOMINAL_SPEED_M_PER_S
 
         self.goal_loc = loc(self.plan_tuples[-1])
         self.goal_time = time(self.plan_tuples[-1])
+
+    def get_distance(self) -> float:
+        return self.plan_tuples_distance
+
 
     def get_expected_completion_time(self) -> float:
         return self.expected_completion_time

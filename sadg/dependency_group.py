@@ -18,9 +18,9 @@
 from enum import Enum
 from typing import List
 
-from sadg_controller.sadg.dependency_switch import DependencySwitch
-from sadg_controller.sadg.status import Status
-from sadg_controller.sadg.vertex import Vertex
+from sadg.dependency_switch import DependencySwitch
+from sadg.status import Status
+from sadg.vertex import Vertex
 
 
 class DependencyGroupType(Enum):

@@ -36,12 +36,14 @@ class MAPFProblem:
         starts: List[RoadmapLocation],
         goals: List[RoadmapLocation],
         logger: Logger,
+        trial: int
     ) -> None:
         self.roadmap = roadmap
         self.starts = starts
         self.goals = goals
         self.logger = logger
-        self.tmp_dir = mkdtemp(prefix="log")
+        self.trial = trial
+        # self.tmp_dir = mkdtemp(prefix="log")
 
     def solve(self, suboptimality_factor: float = 1.5) -> Plan:
         """Solve the MAPF problem using ECBS algorithm."""
@@ -55,7 +57,7 @@ class MAPFProblem:
         agv_data = self._get_agv_data()
 
         # write to yaml file
-        input_file = f"{self.tmp_dir}/input.yaml"
+        input_file = f"{self.roadmap.roadmap_path}/input_{self.trial}.yaml"
         ecbs_input = {
             "map": map_data,
             "agents": agv_data,
@@ -63,16 +65,16 @@ class MAPFProblem:
         write_yaml(input_file, ecbs_input, self.logger)
 
         # solve MAPF using the generated yaml file
-        solution_file = f"{self.tmp_dir}/solution.yaml"
+        solution_file = f"output/{self.roadmap.map_type}_solution_{self.trial}.yaml"
         cmd = [
-            "ecbs",
+            "mapf/ecbs",
             "-i",
             input_file,
             "-o",
             solution_file,
             "-w",
             str(suboptimality_factor),
-        ]
+        ] # This is a command-line call to the ECBS MAPF solver, which is expected to be installed and available in the system's PATH. The command takes the input YAML file, specifies the output file for the solution, and sets the suboptimality factor for the ECBS algorithm.
 
         result = subprocess.run(
             cmd,
@@ -87,7 +89,8 @@ class MAPFProblem:
 
         # read solution
         solution = read_yaml(solution_file, self.logger)
-
+        if not solution or "schedule" not in solution:
+            raise RuntimeError("MAPF Planning did not return a valid solution!")
         # get map dimensions
         dimensions = self.roadmap.get_dimensions()
 

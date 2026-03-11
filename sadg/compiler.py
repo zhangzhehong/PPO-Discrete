@@ -17,14 +17,14 @@
 
 from logging import Logger
 
-from sadg_controller.core.geometry import intersects
-from sadg_controller.mapf.plan import Plan
-from sadg_controller.sadg.dependency import Dependency
-from sadg_controller.sadg.dependency_group import DependencyGroup
-from sadg_controller.sadg.dependency_switch import DependencySwitch
-from sadg_controller.sadg.sadg import SADG
-from sadg_controller.sadg.status import Status
-from sadg_controller.sadg.vertex import Vertex, loc
+from core.geometry import intersects
+from mapf.plan import Plan
+from sadg.dependency import Dependency
+from sadg.dependency_group import DependencyGroup
+from sadg.dependency_switch import DependencySwitch
+from sadg.sadg import SADG
+from sadg.status import Status
+from sadg.vertex import Vertex, loc
 
 
 def compile_sadg(P: Plan, logger: Logger) -> SADG:  # noqa: C901
@@ -156,7 +156,9 @@ def compile_sadg(P: Plan, logger: Logger) -> SADG:  # noqa: C901
         for _ in groups:
             group_cnt += 1
 
-    logger.info(f"Switches: {switch_cnt}")
-    logger.info(f"Groups:   {group_cnt}")
+    print(f"Switches: {switch_cnt}")
+    print(f"Groups:   {group_cnt}")
+
+    # print(f"SADG compilation complete... {len(V_sadg)} vertices, {len(E_intra_agent)} intra-agent dependencies, {len(E_inter_agent)} inter-agent dependencies.")
 
     return SADG(V_sadg, E_intra_agent, E_groups, logger)

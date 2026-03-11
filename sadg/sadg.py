@@ -22,10 +22,10 @@ import mip
 from mip import BINARY, CONTINUOUS, INF, MINIMIZE, minimize, xsum
 from mip.entities import Var
 
-from sadg_controller.sadg.dependency import Dependency
-from sadg_controller.sadg.dependency_group import DependencyGroup
-from sadg_controller.sadg.status import Status
-from sadg_controller.sadg.vertex import Vertex
+from sadg.dependency import Dependency
+from sadg.dependency_group import DependencyGroup
+from sadg.status import Status
+from sadg.vertex import Vertex
 
 EPSILON = 0.01
 M = 1000000
