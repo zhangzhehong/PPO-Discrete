@@ -16,7 +16,11 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 from logging import DEBUG, Logger
+import random
 import sys
+import time
+import json
+import os
 from mapf.problem import MAPFProblem
 from mapf.roadmap import Roadmap
 from sadg.compiler import compile_sadg
@@ -25,18 +29,21 @@ from sadg.status import Status
 from sadg.visualizer import Visualizer
 
 
-def main(agent_count, map_type, trial_sum) -> None:
+def main(agent_count, map_type, trial_sum, delay=0.0) -> None:
 
     # agent_count = 40
     ecbs_w = 1.8
+    move_unit = 0.5
+    prob_delay = delay
 
     logger = Logger(__name__, level=DEBUG)
 
     roadmap_path = f"data/roadmaps/{map_type}"
     roadmap = Roadmap(roadmap_path,map_type)
 
-    for trial in range(5,trial_sum):
-        print(f"Trial {trial+1}/{trial_sum} for map {map_type} with {agent_count} agents ...")
+    for trial in range(21,trial_sum+1):
+        start_t = time.time()
+        print(f"Trial {trial}/{trial_sum} for map {map_type} with delay_prob {prob_delay} and {agent_count} agents ...")
         starts, goals = roadmap.random_locations(agent_count,trial)
 
         problem = MAPFProblem(roadmap, starts, goals, logger, trial)
@@ -49,15 +56,14 @@ def main(agent_count, map_type, trial_sum) -> None:
         agent_curr_vertex = [ sadg.get_first_agent_vertex(agent_id) for agent_id in agent_ids]    
 
         # Metrics Initialization
-        metrics = {aid: {'distance': 0.0, 'duration': 0, 'wait_time': 0, 'tasks': []} for aid in agent_ids}
-        current_task_wait = {aid: 0 for aid in agent_ids}
-        current_task_start = {aid: None for aid in agent_ids}
+        metrics = {aid: {'distance': 0.0,'wait_time':0.0, 'finish_time': 0, "action_cost_time":[0], 'tasks': [starts[id].get_row_col(),goals[id].get_row_col()]} for id, aid in enumerate(agent_ids)}
         finished_agents = set()
-
-        for sim_iter in range(50):
+        final_makespan = None
+        for sim_iter in range(20000):
             # Check if all agents finished
             if len(finished_agents) == len(agent_ids):
                 print(f"All agents finished at step {sim_iter}")
+                final_makespan = sim_iter
                 break
 
             for idx, curr_vertex in enumerate(agent_curr_vertex):
@@ -71,52 +77,41 @@ def main(agent_count, map_type, trial_sum) -> None:
                     if curr_vertex.can_execute():
                         # print(f"{agent_id}: set to IN-PROGRESS ...")
                         curr_vertex.set_status(Status.IN_PROGRESS)
-                        current_task_start[agent_id] = sim_iter
                     else:
-                        # print(f"{agent_id}: blocked by dependencies ...")
-                        current_task_wait[agent_id] += 1
-                        metrics[agent_id]['wait_time'] += 1
+                        # metrics[agent_id]['wait_time'] += 1
+                        print(f"{agent_id}: blocked by dependencies ...")
 
                 # Agent is at executing current vertex
                 elif curr_vertex.get_status() == Status.IN_PROGRESS:
-
                     # Only set agents 0 and 2 to completed unless 10 time-steps in
-                    if idx != 0 or sim_iter > 18:
+                    # if idx != 0 or sim_iter > 18:
+                    #     # print(f"{agent_id}: set to COMPLETED ...")
+                    #     curr_vertex.set_status(Status.COMPLETED)
+                    assert len(metrics[agent_id]['action_cost_time']) > 0, f"Action cost should be > 0 for vertex {curr_vertex.get_shorthand()}"
+                    if sim_iter - metrics[agent_id]['action_cost_time'][-1] >= curr_vertex.get_distance()/move_unit:
                         # print(f"{agent_id}: set to COMPLETED ...")
                         curr_vertex.set_status(Status.COMPLETED)
-
-                        # Record Metrics
-                        start_time = current_task_start[agent_id]
-                        if start_time is not None:
-                            duration = sim_iter - start_time
-                            dist = curr_vertex.get_distance()
-                            wait = current_task_wait[agent_id]
-                            
-                            metrics[agent_id]['distance'] += dist
-                            metrics[agent_id]['duration'] += duration
-                            metrics[agent_id]['tasks'].append({
-                                'task': curr_vertex.get_shorthand(),
-                                'distance': dist,
-                                'duration': duration,
-                                'wait_time': wait,
-                                'start': start_time,
-                                'end': sim_iter
-                            })
-                            
-                            # Reset task wait and start
-                            current_task_wait[agent_id] = 0
-                            current_task_start[agent_id] = None
-
                 elif curr_vertex.get_status() == Status.COMPLETED:
                     if curr_vertex.has_next():
                         # print(f"{agent_id}: next vertex STAGED ...")
-
                         # Set current vertex of this agent to the next in the sequence
+                        # Considering env delay
+                        if random.random() < prob_delay:
+                            # print(f"{agent_id}: experienced delay at vertex {curr_vertex.get_shorthand()} ...")
+                            # Agent experiences a delay, remains at current vertex for this iteration
+                            metrics[agent_id]['wait_time'] += 1
+                            continue
+                        dist = curr_vertex.get_distance()
+                        metrics[agent_id]['distance'] += dist
                         agent_curr_vertex[idx] = curr_vertex.get_next()
-
+                        metrics[agent_id]['action_cost_time'].append(sim_iter)
                     else:
                         # print(f"{agent_id}: finished plan!")
+                        dist = curr_vertex.get_distance()
+                        metrics[agent_id]['distance'] += dist
                         finished_agents.add(agent_id)
+                        # Record Metrics
+                        metrics[agent_id]['finish_time'] = sim_iter
                 else:
                     raise RuntimeError("Should not achieve this state ...")
 
@@ -124,18 +119,17 @@ def main(agent_count, map_type, trial_sum) -> None:
             print("----------------------------------------")
             sadg.optimize(horizon=2)
 
-        import json
-        import os
-
         output_data = {
-            "global_time_consumption": sim_iter,
+            "makespan": final_makespan,
+            "flowtime": time.time() - start_t,
             "map_type": map_type,
             "agent_count": agent_count,
+            "delay_prob": prob_delay,
             "metrics": metrics
         }
 
         os.makedirs("output", exist_ok=True)
-        output_filename = f"output/metrics_{map_type}_{agent_count}_{trial}.json"
+        output_filename = f"output/metrics_{map_type}_{agent_count}_{trial}_{prob_delay}.json"
         
         with open(output_filename, 'w') as f:
             json.dump(output_data, f, indent=2)
@@ -145,4 +139,4 @@ def main(agent_count, map_type, trial_sum) -> None:
 
 
 if __name__ == "__main__":
-    main(agent_count=int(sys.argv[1]), map_type=sys.argv[2], trial_sum=int(sys.argv[3]))
+    main(agent_count=int(sys.argv[1]), map_type=sys.argv[2], trial_sum=int(sys.argv[3]), delay=float(sys.argv[4]) if len(sys.argv) > 4 else 0.0)

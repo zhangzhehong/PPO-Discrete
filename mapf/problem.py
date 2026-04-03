@@ -57,7 +57,7 @@ class MAPFProblem:
         agv_data = self._get_agv_data()
 
         # write to yaml file
-        input_file = f"{self.roadmap.roadmap_path}/input_{self.trial}.yaml"
+        input_file = f"{self.roadmap.roadmap_path}/input_{len(self.starts)}_{self.trial}.yaml"
         ecbs_input = {
             "map": map_data,
             "agents": agv_data,
@@ -65,7 +65,7 @@ class MAPFProblem:
         write_yaml(input_file, ecbs_input, self.logger)
 
         # solve MAPF using the generated yaml file
-        solution_file = f"output/{self.roadmap.map_type}_solution_{self.trial}.yaml"
+        solution_file = f"output/{self.roadmap.map_type}_solution_{len(self.starts)}_{self.trial}.yaml"
         cmd = [
             "mapf/ecbs",
             "-i",
@@ -100,7 +100,6 @@ class MAPFProblem:
 
         agv_data = []
         for idx, (start, goal) in enumerate(zip(self.starts, self.goals)):
-
             agv_data.append(
                 {
                     "name": f"agent{idx}",

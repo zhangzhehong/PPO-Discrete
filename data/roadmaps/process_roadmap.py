@@ -28,7 +28,7 @@ def create_topology_graph(grid, dimensions):
     resolution = dimensions.get('resolution', 1.0)
     x_offset = dimensions.get('x_offset', 0.0)
     y_offset = dimensions.get('y_offset', 0.0)
-
+    print(f"Creating graph with resolution={resolution}, x_offset={x_offset}, y_offset={y_offset} ...")
     # Add nodes
     for r in range(rows):
         for c in range(cols):
@@ -104,13 +104,13 @@ def process_directory(directory):
                 data['nodes'].append(node_data)
 
                 # Add to topo dictionary
-                loc = list(G.nodes[node]['loc'])
+                loc = list(G.nodes[node]['pos'])
                 # Ensure float representation for consistency
                 loc = [float(x) for x in loc]
                 
                 adj = []
                 for neighbor in G.neighbors(node):
-                    neighbor_loc = list(G.nodes[neighbor]['loc'])
+                    neighbor_loc = list(G.nodes[neighbor]['pos'])
                     adj.append([float(x) for x in neighbor_loc])
                 
                 # Use string representation of list as key, similar to topo_demo.json

@@ -21,7 +21,7 @@ from mapf.plan_tuple import PlanTuple
 from sadg.location import Location, calculate_distance
 from sadg.status import Status
 
-NOMINAL_SPEED_M_PER_S = 2  # meters per second
+NOMINAL_SPEED_M_PER_S = 0.5  # meters per second
 
 
 class Vertex:
@@ -143,7 +143,6 @@ class Vertex:
 
     def get_distance(self) -> float:
         return self.plan_tuples_distance
-
 
     def get_expected_completion_time(self) -> float:
         return self.expected_completion_time

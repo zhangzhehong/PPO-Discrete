@@ -17,6 +17,7 @@
 
 import csv
 import random
+import sys
 from logging import getLogger
 from typing import Dict, List
 
@@ -25,7 +26,6 @@ import yaml
 from mapf.roadmap_location import RoadmapLocation
 
 logger = getLogger(__name__)
-random.seed(1)
 
 
 class Roadmap:
@@ -53,18 +53,20 @@ class Roadmap:
             )
 
         while True:
+            # First sample starts
             starts = random.sample(valid_start_locations, agv_count)
-            goals = random.sample(valid_start_locations, agv_count)
             
-            # Check if any agent has same start and goal
-            conflict = False
-            for s, g in zip(starts, goals):
-                if s.row == g.row and s.col == g.col:
-                    conflict = True
-                    break
+            if len(valid_start_locations) < 2 * agv_count:
+                raise Exception(
+                    f"{len(valid_start_locations)} Not enough valid locations to ensure disjoint start and goal sets."
+                )
+
+            # To ensure disjoint sets easily: sample 2*agv_count locations at once
+            combined_sample = random.sample(valid_start_locations, 2 * agv_count)
+            starts = combined_sample[:agv_count]
+            goals = combined_sample[agv_count:]
             
-            if not conflict:
-                return starts, goals
+            return starts, goals
 
     def get_map_data(self) -> Dict[str, List[List[int]]]:
         return self.map_data
@@ -73,7 +75,6 @@ class Roadmap:
         return self.dimensions
 
     def _get_valid_agv_starts(self) -> List[RoadmapLocation]:
-
         valid_locations = []
         for row_idx, row in enumerate(self.array):
             for col_idx, cell in enumerate(row):
